@@ -6,6 +6,7 @@ import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
+import android.content.Context.DEVICE_POLICY_SERVICE
 import android.content.Intent
 import android.os.UserHandle
 import android.util.Log
@@ -13,7 +14,6 @@ import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat.getSystemService
 
 class DeviceOwnerReceiver : DeviceAdminReceiver() {
-
     private val TAG = "DeviceOwnerReceiver"
 
     @Override
@@ -41,4 +41,20 @@ class DeviceOwnerReceiver : DeviceAdminReceiver() {
         // `adb shell dpm remove-active-admin co.coburglabs.mdm/.DeviceOwnerReceiver`
         // command is issued. See logcat. Could be a "testOnly" flag issue?
     }
+    override fun onSecurityLogsAvailable(context: Context, intent: Intent) {
+        val manager = context.getSystemService(DEVICE_POLICY_SERVICE) as DevicePolicyManager
+        val deviceAdminSample = ComponentName(
+            context.packageName,
+"co.coburglabs.mdm.DeviceOwnerReceiver"
+        )
+        val result = manager.retrieveSecurityLogs(deviceAdminSample)
+        if (result != null) {
+            for(r in result){
+                Log.w(TAG,r.data.toString())
+            }
+        }
+        Log.w(TAG,result.toString())
+    }
 }
+//adb shell dpm set-device-owner co.coburglabs.mdm/.DeviceOwnerReceiver
+//adb shell dpm remove-active-admin co.coburglabs.mdm/.DeviceOwnerReceiver
